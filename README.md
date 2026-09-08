@@ -1,0 +1,145 @@
+# Inventatorii
+
+Joc educativ în limba română pentru copii de **clasele I–IV**, cu **200 de nivele**:
+100 de probleme de rezolvat prin construcție și 100 de mistere de explicat prin investigație.
+
+Rulează într-un browser obișnuit, **offline**, fără instalare și fără internet
+(singura resursă externă este fontul; fără el jocul arată bine în continuare).
+
+Totul încape într-un singur ecran: **nu există derulare nicăieri**, nici pe telefon,
+nici pe laptop. Harta arată un capitol o dată (cu săgeți între capitole), textele și
+desenele se dimensionează după înălțimea ferestrei, iar dacă o fereastră e neobișnuit
+de joasă, jocul se micșorează singur, proporțional, ca să rămână tot vizibil.
+
+---
+
+## Cum pornești jocul
+
+**Varianta 1 — dublu-click.** Deschide `index.html` cu browserul (Chrome, Edge, Firefox).
+
+**Varianta 2 — un singur fișier.** `inventatorii-un-fisier.html` conține tot jocul
+(grafică, sunet, cele 200 de nivele) într-un singur fișier de ~245 KB: îl poți pune
+pe un stick, îl poți trimite pe e-mail sau încărca pe orice site.
+
+**Varianta 3 — server local** (recomandată dacă vrei să modifici fișierele):
+
+```bash
+python -m http.server 8777
+```
+
+apoi deschizi `http://localhost:8777`.
+
+---
+
+## Cele două lumi
+
+### 🔧 Atelierul de invenții — 100 de nivele
+
+Copilul primește o problemă concretă („florile se usucă în vacanță", „mingea zboară
+peste gard", „roverul se blochează în pietre"), alege **3 piese** din tava atelierului
+și le pune în locașuri (prin click sau prin tragere cu degetul). Dacă alegerea e bună,
+invenția se asamblează și primește un **brevet** cu numele ei, plus explicația rolului
+fiecărei piese și principiul științific din spate.
+
+Cele 10 capitole: Acasă · Grădina · Școala · Animale · Apă și vânt · Mașinării ·
+Lumină și energie · Planeta curată · Joacă și sport · Spre stele.
+
+### 🔍 Laboratorul de mistere — 100 de nivele
+
+Aici nu e de ajuns să ghicești explicația. Fiecare mister are **3–4 pași**:
+
+1. **Investighează** — alegi, dintre 4–6 observații, doar indiciile care contează
+   (restul sunt adevărate, dar irelevante — exact ca în realitate).
+2. **Explică** — pui cauzele în **ordinea** în care s-au petrecut, ca un lanț de domino.
+3. **Repară** — alegi intervenția care oprește cauza, nu efectul.
+4. **Verifică** — la dificultatea Greu apare o întrebare de *transfer*: aceeași idee,
+   altă situație. Aici se vede dacă a înțeles sau doar a memorat.
+
+Cele 10 capitole: Bucătărie · Casă · Grădină · Vreme · Școală · Animale și plante ·
+Apă, gheață și abur · Lumină, umbre și sunet · Forțe și mișcare · Energie.
+
+---
+
+## Dificultăți
+
+Aceleași nivele, alt sprijin — așa că frații de vârste diferite pot juca același conținut.
+
+| | Ușor | Mediu | Greu |
+|---|---|---|---|
+| Piese în tavă | 3 corecte + 2 greșite | + 3 greșite | toate |
+| Indicii false | 1 | 2 | toate |
+| Butonul 💡 | oricând | costă o stea | doar după o greșeală |
+| Întrebare bonus / transfer | nu | în capitolele grele | la fiecare nivel |
+
+**Stele:** 3 fără nicio greșeală și fără indiciu · 2 cu o greșeală sau cu indiciu ·
+1 dacă a fost mai greu. Progresul, invențiile și cele 12 insigne se salvează în browser
+(`localStorage`), deci se păstrează după închiderea jocului.
+
+---
+
+## Structura proiectului
+
+```
+index.html               ecranele (meniu, hartă, joc, album)
+css/style.css            tema vizuală, animațiile, layoutul responsiv
+js/art.js                ~130 de icoane, 19 scene și 3 personaje, desenate în SVG din cod
+js/fx.js                 sunete (Web Audio), confetti, citire cu voce tare
+js/levels-build.js       cele 100 de nivele de construcție
+js/levels-fix.js         cele 100 de mistere
+js/game.js               motorul: stare, progres, cele două moduri de joc, stele, insigne
+                         (tot aici stă și funcția fit(), care garantează încadrarea în ecran)
+build-artifact.js        împachetează totul în inventatorii-un-fisier.html
+```
+
+Nu există imagini: toată grafica e generată din cod, deci jocul pornește instant și
+nu se strică dacă muți folderul.
+
+---
+
+## Cum adaugi nivele noi
+
+**Invenție** — un rând nou în `js/levels-build.js`:
+
+```js
+['gradina', 'floare,ghiveci', 'Titlul nivelului',
+  'Problema, în 1–2 fraze.',
+  'Numele invenției',
+  'scara,carlig,cos',            // piesele corecte (chei din js/art.js)
+  'cui,gheata,balon',            // piesele care nu se potrivesc
+  'Rolul piesei 1|Rolul piesei 2|Rolul piesei 3',
+  'Explicația științifică, pe limba copilului.',
+  'Întrebare bonus?|Varianta A;Varianta B;Varianta C|0'],   // opțional
+```
+
+**Mister** — un rând nou în `js/levels-fix.js`:
+
+```js
+['bucatarie', 'pahar,soare', 'Titlul misterului',
+  'Ce s-a întâmplat, cu detalii care par nevinovate.',
+  'soare~Indiciu care contează~1|pisica~Indiciu irelevant~0|…',
+  'Prima cauză|A doua cauză|A treia cauză',
+  'Cum rezolvi?|Varianta A;Varianta B;Varianta C|0',
+  'De ce s-a întâmplat, explicat simplu.',
+  'Aceeași idee, altă situație?|A;B;C|0'],                  // opțional
+```
+
+Cheile pieselor și ale scenelor sunt cele definite în `js/art.js` (`ART.I` și `ART.SC`);
+`ART.LBL` conține denumirea lor în română. Capitolele se formează automat din câte
+10 nivele consecutive.
+
+După modificări, reconstruiește fișierul unic cu:
+
+```bash
+node build-artifact.js
+```
+
+---
+
+## Accesibilitate
+
+- Butonul 🗣️ citește textul cu voce tare (util în clasa I) — folosește vocea
+  românească instalată în sistem, dacă există.
+- Ținte de click mari, contrast bun, navigare cu tastatura (`Tab`, `Enter`, `Esc`).
+- Fără derulare: pe orice ecran, tot ce trebuie apăsat e vizibil de la bun început.
+- Respectă setarea „mișcare redusă" din sistemul de operare.
+- Funcționează pe telefon și tabletă, nu doar pe calculator.
