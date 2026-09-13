@@ -133,11 +133,14 @@ Dacă folosești o piesă nouă, adaugă-i și o descriere neutră în
 `LEVELS_BUILD.parts` (tot în `js/levels-build.js`): ea apare când copilul pune piesa
 în locaș și îi spune *ce face* piesa, nu dacă e alegerea bună.
 
-**Scenele.** `ART.scene(scena, props)` așază obiectele cu sens: cele obișnuite stau cu
-talpa pe linia de sol a scenei (`GROUND` în `js/art.js`), cele care zboară (soare, nori,
-păsări, baloane) merg pe cer, obiectele de perete (raft, ceas, bec) stau la înălțime de
-perete, iar în spațiu totul plutește. Ce e deja desenat în fundal (soarele din grădină,
-luna din noapte) nu se mai pune o dată.
+**Scenele.** `ART.scene(scena, props)` așază obiectele cu sens, iar `ART.settle(svg)`,
+apelat după ce scena e în pagină, **măsoară desenul fiecărui obiect** și îi pune talpa
+exact pe linia de sol a scenei (`GROUND` în `js/art.js`). Obiectele ocolesc mobila din
+fundal (`FREE`), cele care zboară (soare, nori, păsări, baloane) merg pe cer, cele de
+perete (raft, ceas, bec) stau la înălțime de perete, în golul liber, iar în spațiu totul
+plutește. Ce e deja în fundal (patul din cameră, frigiderul, luna) nu se mai desenează
+o dată, iar mărimile sunt apropiate de realitate (`SIZE`): o cană e mică, un pat e mare.
+Pentru problemele din casă care se petrec noaptea există scena `camera_noapte`.
 
 După modificări, reconstruiește fișierul unic cu:
 

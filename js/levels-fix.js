@@ -585,7 +585,7 @@ window.LEVELS_FIX = {
       'Vezi un obiect negru tocmai pentru că nu îți trimite lumina înapoi. Energia rămâne în el și îl încălzește.',
       'De ce sunt casele din țările calde văruite în alb?|Reflectă lumina și rămân răcoroase;E doar o tradiție;Vopseaua albă e mai ieftină|0'],
 
-    ['noapte', 'fereastra,bec', 'Fața din geam',
+    ['camera_noapte', 'fereastra,bec', 'Fața din geam',
       'Seara, Ana s-a apropiat de fereastră ca să se uite în curte. În loc de curte, s-a văzut pe ea, ca într-o oglindă. Ziua, același geam e perfect transparent.',
       'bec~Lumina din cameră e aprinsă~1|luna~Afară e întuneric complet~1|fereastra~Ziua nu se întâmplă asta~1|oglinda~Nu e nicio oglindă în cameră~0|pisica~Pisica se uită și ea~0',
       'Geamul reflectă mereu o mică parte din lumina care cade pe el|Ziua, lumina puternică de afară acoperă complet reflexia|Noaptea, afară e întuneric, așa că reflexia devine imaginea cea mai puternică',
@@ -617,7 +617,7 @@ window.LEVELS_FIX = {
       'Aceleași culori apar într-o pată de ulei pe asfalt ud: tot un strat foarte subțire, tot aceeași poveste a luminii.',
       'Ce vezi într-o pată de benzină pe apă?|Irizații, ca la bule;Doar negru;Doar alb|0'],
 
-    ['noapte', 'lampa,rigla', 'Cercul lanternei',
+    ['camera_noapte', 'lampa,rigla', 'Cercul lanternei',
       'Ana ține lanterna la un metru de perete: cercul e mic și foarte luminos. La trei metri, cercul e uriaș, dar lumina abia se mai vede.',
       'lampa~Cu cât e mai departe, cercul e mai mare~1|rigla~La 1 m cercul e mic, la 3 m e uriaș~1|bec~Lumina pare mult mai slabă de departe~1|vant~Vântul nu contează~0|ceas~Era seara~0',
       'Lumina pleacă din lanternă sub forma unui con|Cu cât merge mai departe, conul se lărgește|Aceeași cantitate de lumină se împrăștie pe o suprafață mai mare, deci pare mai slabă',

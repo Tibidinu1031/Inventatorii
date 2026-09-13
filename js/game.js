@@ -421,6 +421,7 @@
       '<div class="bubble"><span class="who">' + (who === 'bit' ? 'Bit, robotul' : who === 'ana' ? 'Ana' : 'Rareș') +
       '</span>' + esc(text) + '</div></div>';
     $('stage').classList.add('anim');
+    ART.settle($('stage').querySelector('svg.scene-svg'));   /* talpa pe sol, măsurat după desen */
     if (S.voce) FX.speak(text);
   }
 

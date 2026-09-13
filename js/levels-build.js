@@ -46,7 +46,7 @@ window.LEVELS_BUILD = {
       'palnie,cana,tava', 'magnet,minge,foc', 'Strânge lichidul spre gaură=Pâlnia are gura largă și strânge tot laptele într-un fir subțire, ușor de nimerit.|Primește laptele=Cana primește firul de lapte exact în gura ei mică, fără stropi pe masă.|Prinde stropii scăpați=Tava de dedesubt prinde puținele picături scăpate, ca masa să rămână curată.',
       'Pâlnia are gura largă și gâtul îngust: adună tot lichidul într-un fir subțire, ușor de nimerit.'],
 
-    ['noapte', 'pat,luna', 'Drumul spre baie, noaptea', 'Noaptea e beznă pe hol. Dacă aprinzi lumina mare, trezești toată casa. Dacă nu o aprinzi, te lovești de dulap.', 'Lumina care te simte',
+    ['camera_noapte', 'raft,scaun', 'Drumul spre baie, noaptea', 'Noaptea e beznă pe hol. Dacă aprinzi lumina mare, trezești toată casa. Dacă nu o aprinzi, te lovești de dulap.', 'Lumina care te simte',
       'senzor,bec,baterie', 'oala,panza,sfoara', 'Simte că vine cineva=Senzorul simte când treci prin hol și aprinde lumina doar atunci.|Face lumină blândă=Becul mic dă exact atâta lumină cât să vezi drumul, fără să trezești casa.|Dă energie=Bateria alimentează lampa noaptea, fără fire trase prin hol.',
       'Senzorul e o santinelă: când te apropii, închide circuitul și becul se aprinde singur, doar cât e nevoie.'],
 
@@ -234,7 +234,7 @@ window.LEVELS_BUILD = {
       'Soarele dă cea mai multă energie exact în zilele în care plantele au nevoie de cea mai multă apă.',
       'Când merge cel mai bine o pompă solară?|Într-o zi senină de vară;Noaptea;Într-o zi cu ceață|0'],
 
-    ['noapte', 'bec,luna', 'Pană de curent', 'Furtuna a doborât un stâlp. Casa e în beznă, iar telefoanele sunt aproape descărcate.', 'Lanterna de urgență',
+    ['camera_noapte', 'bec,ceas', 'Pană de curent', 'Furtuna a doborât un stâlp. Casa e în beznă, iar telefoanele sunt aproape descărcate.', 'Lanterna de urgență',
       'baterie,bec,intrerupator', 'sare,elice,planta', 'Energia păstrată dinainte=Bateria are energie pusă deoparte, pentru când nu mai vine curent.|Face lumina=Becul transformă energia bateriei în lumina de care ai nevoie.|Pornește doar când ai nevoie=Întrerupătorul pornește lanterna doar când e nevoie, ca bateria să țină mult.',
       'Bateria e energie „la conservă": o strângi când ai curent și o folosești când nu mai ai.'],
 
