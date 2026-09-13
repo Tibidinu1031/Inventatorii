@@ -431,6 +431,15 @@
     return h + '</div><div class="step-label">Pasul ' + (cur + 1) + ' din ' + n + ' · ' + labels[cur] + '</div>';
   }
 
+  /* „Mergi înainte" — nimic nu avansează singur; copilul citește în ritmul lui */
+  function goOn(fn, label) {
+    var p = $('panel'), a = p.querySelector('.actions');
+    if (!a) { a = el('div', 'actions'); p.appendChild(a); }
+    a.innerHTML = '<button class="btn green" id="bGo">' + esc(label || 'Mergi înainte') + ' →</button>';
+    $('bGo').onclick = function () { FX.sfx.click(); fn(); };
+    $('bGo').focus();
+  }
+
   function feedback(okType, title, text) {
     var fb = $('fb');
     if (!fb) return;
@@ -655,13 +664,13 @@
         if (i === q.c) {
           b.classList.add('ok'); FX.sfx.good();
           feedback(true, 'Exact!', 'Ai înțeles ideea, nu doar răspunsul.');
-          setTimeout(next, 1100);
+          goOn(next);
         } else {
           G.greseli++;
           b.classList.add('no'); FX.sfx.bad(); FX.shake(b);
           opts.children[q.c].classList.add('ok');
           feedback(false, 'Nu chiar', 'Răspunsul corect e ' + 'ABC'[q.c] + '. Ține minte pentru data viitoare!');
-          setTimeout(next, 2300);
+          goOn(next);
         }
       };
       opts.appendChild(b);
@@ -731,9 +740,9 @@
         Array.prototype.forEach.call(box.children, function (n, i) {
           n.classList.add(G.clueSet[i].good ? 'good' : 'bad'); n.classList.add('used');
         });
-        feedback(true, 'Indicii bune!', 'Ai păstrat exact ce contează. Acum pune cauzele în ordine.');
+        feedback(true, 'Indicii bune!', 'Ai păstrat exact ce contează. Urmează: pune cauzele în ordine.');
         G.pas = 1;
-        setTimeout(stepChain, 1200);
+        goOn(stepChain);
       } else {
         G.greseli++;
         FX.sfx.bad(); FX.shake(box);
@@ -776,9 +785,9 @@
         b.querySelector('.k').textContent = poz + 1;
         FX.sfx.star(poz);
         if (G.chainOrder.length === G.L.chain.length) {
-          feedback(true, 'Exact așa s-a întâmplat!', 'Cauzele se leagă una de alta, ca niște domino.');
+          feedback(true, 'Exact așa s-a întâmplat!', 'Cauzele se leagă una de alta, ca niște domino. Urmează: ce facem acum?');
           G.pas = 2;
-          setTimeout(stepFix, 1200);
+          goOn(stepFix);
         }
       };
       box.appendChild(b);
@@ -806,10 +815,10 @@
           feedback(true, 'Rezolvat!', G.L.why);
           setStage('ana', 'Am înțeles! ' + G.L.why, 'bucuros');
           var next = function () {
-            if (useTransfer()) { G.pas = 3; setTimeout(stepTransfer, 200); }
+            if (useTransfer()) { G.pas = 3; stepTransfer(); }
             else finishLevel();
           };
-          setTimeout(next, 1800);
+          goOn(next, useTransfer() ? 'Mergi înainte' : 'Am citit, mergi înainte');
         } else {
           G.greseli++;
           b.classList.add('no', 'locked'); FX.sfx.bad(); FX.shake(b);
@@ -839,13 +848,13 @@
         if (i === q.c) {
           b.classList.add('ok'); FX.sfx.good();
           feedback(true, 'Ai înțeles cu adevărat!', 'Ideea funcționează și în alte locuri — asta înseamnă să înveți.');
-          setTimeout(finishLevel, 1300);
+          goOn(finishLevel);
         } else {
           G.greseli++;
           b.classList.add('no'); opts.children[q.c].classList.add('ok');
           FX.sfx.bad(); FX.shake(b);
           feedback(false, 'Aproape', 'Corect era ' + 'ABC'[q.c] + '. Recitește explicația și vei vedea de ce.');
-          setTimeout(finishLevel, 2500);
+          goOn(finishLevel);
         }
       };
       opts.appendChild(b);
