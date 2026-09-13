@@ -97,7 +97,8 @@
         return {
           i: i, n: i + 1, world: 'build',
           scene: L[0], props: L[1].split(','), title: L[2], problem: L[3], name: L[4],
-          ok: L[5].split(','), bad: L[6].split(','), roles: L[7].split('|'),
+          ok: L[5].split(','), bad: L[6].split(','),
+          roles: L[7].split('|').map(function (r) { var p = r.split('='); return { short: p[0], why: p[1] || p[0] }; }),
           why: L[8], quiz: parseQ(L[9])
         };
       }
@@ -504,6 +505,18 @@
     FX.sfx.pick();
     if (node) FX.puff(node, 'rgba(255,201,60,.85)');
     drawBuild();
+    describePart(k);
+  }
+
+  /* ce face piesa — informație neutră, ca să judece singur dacă ajută */
+  function describePart(k) {
+    var d = (window.LEVELS_BUILD.parts || {})[k];
+    if (!d) return;
+    var fb = $('fb');
+    if (!fb) return;
+    fb.className = 'fb info show';
+    fb.innerHTML = '<span class="pi">' + ART.icon(k) + '</span><span><b>' + esc(ART.label(k)) + '</b> — ' + esc(d) + '.</span>';
+    if (S.voce) FX.speak(ART.label(k) + ': ' + d + '.');
   }
 
   /* tragere cu degetul / mouse-ul (opțional, click-ul rămâne principal) */
@@ -538,9 +551,11 @@
       Array.prototype.forEach.call(document.querySelectorAll('.slot'), function (s) { s.classList.remove('hot'); });
       if (over) {
         var idx = +over.getAttribute('data-slot');
-        if (!G.slots[idx] && G.slots.indexOf(key) < 0) { G.slots[idx] = key; FX.sfx.pick(); }
+        var pus = !G.slots[idx] && G.slots.indexOf(key) < 0;
+        if (pus) { G.slots[idx] = key; FX.sfx.pick(); }
       }
       drawBuild();
+      if (over && pus) describePart(key);
     });
     node.addEventListener('pointercancel', function () {
       moved = false; node.classList.remove('dragging');
@@ -587,7 +602,8 @@
 
     var ic = L.ok.map(function (k) { return '<span class="inv-ic">' + ART.icon(k) + '</span>'; }).join('<span class="inv-plus">+</span>');
     var roles = L.ok.map(function (k, i) {
-      return '<li><span class="ri">' + ART.icon(k) + '</span><b>' + esc(ART.label(k)) + '</b> — ' + esc(L.roles[i] || '') + '</li>';
+      var r = L.roles[i] || { short: '', why: '' };
+      return '<li><span class="ri">' + ART.icon(k) + '</span><span class="why"><b>' + esc(ART.label(k)) + '</b> — ' + esc(r.why) + '</span></li>';
     }).join('');
 
     var p = $('panel');
@@ -598,10 +614,14 @@
       '<div class="inv-name">' + esc(L.name) + '</div>' +
       '<div class="inv-sub">brevet nr. ' + (100 + L.n) + ' · atelierul Inventatorilor</div>' +
       '</div>' +
+      '<div class="step-label">🔎 De ce ajută fiecare piesă</div>' +
       '<ul class="roles">' + roles + '</ul>' +
-      '<div class="fb ok show"><b>De ce merge</b>' + esc(L.why) + '</div>' +
+      '<div class="fb ok show"><b>Ideea din spate</b>' + esc(L.why) + '</div>' +
       '<div class="actions"><button class="btn green" id="bNext">Mai departe →</button></div>';
-    setStage('bit', 'Genial! ' + L.name + ' funcționează perfect.', 'bucuros');
+    setStage('bit', 'Genial! ' + L.name + ' funcționează. Uite de ce ajută fiecare piesă.', 'bucuros');
+    if (S.voce) {
+      FX.speak(L.name + ' funcționează! ' + L.ok.map(function (k, i) { return (L.roles[i] || {}).why || ''; }).join(' ') + ' ' + L.why);
+    }
     $('bNext').onclick = function () {
       FX.sfx.click();
       if (wantBonus() && G.L.quiz) askQuiz(G.L.quiz, 'Întrebare bonus', finishLevel);
@@ -871,7 +891,8 @@
     if (G.w === 'build') {
       var lipsa = L.ok.filter(function (k) { return G.slots.indexOf(k) < 0; });
       var k = lipsa[0] || L.ok[0];
-      t = 'Ai nevoie de ceva care ' + (L.roles[L.ok.indexOf(k)] || 'ajută la problema asta').toLowerCase() + '.';
+      var rol = L.roles[L.ok.indexOf(k)];
+      t = 'Ai nevoie de ceva care ' + (rol ? rol.short : 'ajută la problema asta').toLowerCase() + '.';
     } else if (G.pas === 0) {
       var bun = G.clueSet.filter(function (c) { return c.good; })[0];
       t = 'Un indiciu sigur folositor: „' + bun.t + '".';

@@ -264,10 +264,11 @@ button:disabled { cursor: default; opacity: .5; }
   border: 3px solid #fff; display: flex; flex-direction: column; min-height: min-content;
 }
 .scene-svg { display: block; flex: 1; min-height: 0; width: 100%; height: 100%; }
+/* plutesc doar obiectele care chiar zboară (cer, aer, spațiu); restul stau pe sol */
 .stage .prop { transform-box: fill-box; transform-origin: center; }
-.stage.anim .prop0 { animation: propPop 1.2s ease-in-out infinite alternate; }
-.stage.anim .prop1 { animation: propPop 1.5s ease-in-out .2s infinite alternate; }
-@keyframes propPop { from { transform: translateY(0) } to { transform: translateY(-6px) } }
+.stage.anim .prop.sky { animation: propFloat 2.6s ease-in-out infinite alternate; }
+.stage.anim .prop.sky.prop1 { animation-duration: 3.1s; animation-delay: .4s; }
+@keyframes propFloat { from { translate: 0 0 } to { translate: 0 -7px } }
 
 .speech {
   flex: none; display: flex; gap: 10px; align-items: flex-start;
@@ -583,3 +584,18 @@ button:focus-visible, .clue:focus-visible, .lvl:focus-visible {
   border-radius: 50%; background: var(--red); color: #fff; font-size: 12px; font-weight: 900;
   display: grid; place-items: center; box-shadow: 0 2px 0 var(--red-d);
 }
+
+/* descrierea neutră a piesei puse în locaș — informație, nu verdict */
+.fb.info { background: #f3f8ff; border: 3px solid #cfe3f5; display: flex; gap: 10px; align-items: center; }
+.fb.info .pi { flex: none; display: grid; place-items: center; }
+.fb.info .pi svg { width: clamp(26px, 4.4vh, 40px); height: clamp(26px, 4.4vh, 40px); }
+.fb.info b { display: inline; color: var(--blue-d); }
+
+/* explicațiile din brevet apar una câte una */
+.roles li { opacity: 0; animation: roleIn .45s cubic-bezier(.2, 1.2, .4, 1) forwards; }
+.roles li:nth-child(1) { animation-delay: .35s; }
+.roles li:nth-child(2) { animation-delay: 1.35s; }
+.roles li:nth-child(3) { animation-delay: 2.35s; }
+@keyframes roleIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.roles li .why { display: block; font-weight: 600; color: var(--ink); }
+.roles li .why b { color: var(--teal-d); }

@@ -106,7 +106,7 @@ nu se strică dacă muți folderul.
   'Numele invenției',
   'scara,carlig,cos',            // piesele corecte (chei din js/art.js)
   'cui,gheata,balon',            // piesele care nu se potrivesc
-  'Rolul piesei 1|Rolul piesei 2|Rolul piesei 3',
+  'Rol scurt=De ce ajută piesa 1 aici.|Rol scurt=De ce ajută piesa 2.|Rol scurt=De ce ajută piesa 3.',
   'Explicația științifică, pe limba copilului.',
   'Întrebare bonus?|Varianta A;Varianta B;Varianta C|0'],   // opțional
 ```
@@ -126,6 +126,18 @@ nu se strică dacă muți folderul.
 Cheile pieselor și ale scenelor sunt cele definite în `js/art.js` (`ART.I` și `ART.SC`);
 `ART.LBL` conține denumirea lor în română. Capitolele se formează automat din câte
 10 nivele consecutive.
+
+Rolul scurt e folosit de butonul 💡 (indiciu fără să dea numele piesei), iar
+explicația completă apare în brevet, după construcție, câte una pentru fiecare piesă.
+Dacă folosești o piesă nouă, adaugă-i și o descriere neutră în
+`LEVELS_BUILD.parts` (tot în `js/levels-build.js`): ea apare când copilul pune piesa
+în locaș și îi spune *ce face* piesa, nu dacă e alegerea bună.
+
+**Scenele.** `ART.scene(scena, props)` așază obiectele cu sens: cele obișnuite stau cu
+talpa pe linia de sol a scenei (`GROUND` în `js/art.js`), cele care zboară (soare, nori,
+păsări, baloane) merg pe cer, obiectele de perete (raft, ceas, bec) stau la înălțime de
+perete, iar în spațiu totul plutește. Ce e deja desenat în fundal (soarele din grădină,
+luna din noapte) nu se mai pune o dată.
 
 După modificări, reconstruiește fișierul unic cu:
 

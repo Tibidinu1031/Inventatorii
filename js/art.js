@@ -382,21 +382,75 @@
   function label(key) { return LBL[key] || key; }
   function character(who, mood, cls) { return svgWrap((CH[who] || CH.bit)(mood || 'normal'), '0 0 64 66', 'ch ' + (cls || '')); }
 
-  /* Scenă completă: fundal + obiecte așezate frumos */
+  /* ============================================================
+     Scenă completă: fundal + obiecte așezate CU SENS
+     Un pat stă pe podea, nu printre stele. Fiecare scenă are o linie
+     de sol; obiectele obișnuite sunt ancorate cu talpa pe ea, cele
+     care zboară de felul lor (soare, nori, păsări, baloane) stau pe
+     cer, obiectele de perete stau la înălțime de perete, iar în
+     spațiu totul plutește — pentru că acolo chiar așa e.
+     ============================================================ */
+  var GROUND = {
+    atelier: 168, bucatarie: 176, gradina: 196, scoala: 176, strada: 160, rau: 150,
+    padure: 196, spatiu: null, laborator: 180, camera: 170, plaja: 172, munte: 176,
+    ferma: 190, noapte: 200, ploios: 180, terenjoaca: 190, pod: 158, magazin: 190, gara: 150
+  };
+  /* ce e desenat deja în fundal — nu-l mai punem o dată */
+  var SCENE_HAS = {
+    gradina: ['soare', 'floare'], plaja: ['soare', 'barca'], noapte: ['luna'], scoala: ['copac'],
+    rau: ['copac'], terenjoaca: ['leagan'], laborator: ['lupa'], camera: ['fereastra'],
+    atelier: ['raft'], gara: ['sina'], padure: ['copac']
+  };
+  var SKY = { soare: 1, luna: 1, stea: 1, nor: 1, ploaie: 1, pasare: 1, zmeu: 1, balon: 1, parasuta: 1, racheta: 1 };
+  var MID = { vant: 1, albina: 1, abur: 1, elice: 1 };
+  var WALL = { fereastra: 1, raft: 1, ceas: 1, oglinda: 1, bec: 1, lampa: 1, sonerie: 1, intrerupator: 1,
+    senzor: 1, difuzor: 1, termometru: 1, panou_solar: 1, clopotel: 1 };
+
+  function spread(n, left, right) {
+    var out = [], i;
+    for (i = 0; i < n; i++) out.push(n === 1 ? (left + right) / 2 : left + (right - left) * i / (n - 1));
+    return out;
+  }
+  function place(k, x, y, sc, cls) {
+    return '<g class="prop ' + cls + '" transform="translate(' + (x - 32 * sc).toFixed(1) + ' ' + (y - 60 * sc).toFixed(1) +
+      ') scale(' + sc.toFixed(2) + ')">' + (I[k] ? I[k]() : '') + '</g>';
+  }
   function scene(key, props, opts) {
     opts = opts || {};
     var bg = (SC[key] || SC.atelier)();
-    var n = (props || []).length, i, inner = '';
-    var spots = [[86, 150], [200, 148], [312, 150], [140, 92], [262, 92]];
-    if (n === 1) spots = [[200, 140]];
-    if (n === 2) spots = [[130, 144], [272, 144]];
-    if (n === 3) spots = [[80, 148], [200, 138], [318, 150]];
-    for (i = 0; i < n; i++) {
-      var k = props[i], sp = spots[i % spots.length];
-      var sc = (n === 1 ? 1.9 : n === 2 ? 1.6 : 1.35) * (opts.scale || 1);
-      inner += '<g class="prop prop' + i + '" transform="translate(' + (sp[0] - 32 * sc) + ' ' + (sp[1] - 32 * sc) + ') scale(' + sc.toFixed(2) + ')">' +
-        (I[k] ? I[k]() : '') + '</g>';
+    var ground = GROUND[key] === undefined ? 176 : GROUND[key];
+    var has = SCENE_HAS[key] || [];
+    var list = (props || []).filter(function (k) { return I[k] && has.indexOf(k) < 0; });
+    var inner = '', i;
+
+    /* în spațiu nu există jos și sus: totul plutește (și se leagănă) */
+    if (ground === null) {
+      var xs0 = spread(list.length, 110, 290);
+      for (i = 0; i < list.length; i++) inner += place(list[i], xs0[i], 150 + (i % 2) * 18, 1.5, 'sky prop' + i);
+      return svgWrap(bg + inner, '0 0 400 240', 'scene-svg');
     }
+
+    var sky = list.filter(function (k) { return SKY[k]; });
+    var mid = list.filter(function (k) { return MID[k]; });
+    var wall = list.filter(function (k) { return WALL[k]; });
+    var floorItems = list.filter(function (k) { return !SKY[k] && !MID[k] && !WALL[k]; });
+
+    /* obiectele de jos: mai mari când sunt puține, mereu cu talpa pe sol */
+    var scF = floorItems.length === 1 ? 1.7 : floorItems.length === 2 ? 1.45 : 1.25;
+    var xs = spread(floorItems.length, 90, 310);
+    for (i = 0; i < floorItems.length; i++) inner += place(floorItems[i], xs[i], ground + 6, scF, 'prop' + i);
+
+    /* obiectele de perete: agățate deasupra podelei; dacă jos stă ceva,
+       le tragem spre stânga, ca să nu atârne fix deasupra lui */
+    var xw = floorItems.length ? spread(wall.length, 60, 140) : spread(wall.length, 70, 330);
+    for (i = 0; i < wall.length; i++) inner += place(wall[i], xw[i], ground - 34, 1.15, 'wall prop' + (floorItems.length + i));
+
+    /* cer și aer: sus, respectiv la jumătate; spre dreapta dacă stânga e ocupată */
+    var xsky = (wall.length || mid.length) ? spread(sky.length, 230, 330) : spread(sky.length, 120, 280);
+    for (i = 0; i < sky.length; i++) inner += place(sky[i], xsky[i], 92, 1.15, 'sky prop' + i);
+    var xmid = sky.length ? spread(mid.length, 110, 190) : spread(mid.length, 150, 250);
+    for (i = 0; i < mid.length; i++) inner += place(mid[i], xmid[i], ground - 48, 1.1, 'sky prop' + i);
+
     return svgWrap(bg + inner, '0 0 400 240', 'scene-svg');
   }
 
