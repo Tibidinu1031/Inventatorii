@@ -175,6 +175,7 @@
   var cur = 'menu';
   function nav(id) {
     FX.stopSpeak();
+    hideHint();
     var s = document.querySelectorAll('.screen');
     for (var i = 0; i < s.length; i++) s[i].classList.remove('active');
     $('s-' + id).classList.add('active');
@@ -783,11 +784,34 @@
   /* ============================================================
      INDICIU (butonul 💡)
      ============================================================ */
+  /* Indiciul e o fereastră temporară: apare la APĂSAREA butonului (nu la
+     ridicarea degetului), stă 5 secunde cu o bară care se scurge și dispare
+     singură, fără să schimbe nimic din scenă sau din panoul de joc. */
+  var HINT_MS = 5000, hintEl = null, hintTimer = 0;
+
+  function showHint(text, titlu, mood) {
+    if (!hintEl) { hintEl = el('div', 'hint-pop'); document.body.appendChild(hintEl); }
+    clearTimeout(hintTimer);
+    hintEl.classList.remove('show');
+    void hintEl.offsetWidth;                       /* repornește animația barei */
+    hintEl.innerHTML =
+      ART.character('bit', mood || 'gandeste') +
+      '<div class="txt"><span class="who">' + esc(titlu || '💡 Indiciu de la Bit') + '</span>' + esc(text) + '</div>' +
+      '<i class="bar"></i>';
+    hintEl.classList.add('show');
+    hintTimer = setTimeout(hideHint, HINT_MS);
+    if (S.voce) FX.speak(text);
+  }
+  function hideHint() {
+    clearTimeout(hintTimer);
+    if (hintEl) hintEl.classList.remove('show');
+  }
+
   function giveHint() {
-    if (!G) return;
+    if (!G || cur !== 'play') return;
     if (!G.M.indiciuGratis && G.indiciiFolosite === 0 && G.greseli === 0 && S.mod === 'greu') {
       FX.sfx.bad();
-      feedback(false, 'La modul Greu…', 'Încearcă întâi o dată singur. Indiciul apare după prima greșeală.');
+      showHint('Încearcă întâi o dată singur. Indiciul apare după prima greșeală.', '🔒 La modul Greu…', 'normal');
       return;
     }
     G.indiciiFolosite++;
@@ -805,14 +829,14 @@
     } else {
       t = 'Gândește-te ce anume trebuie oprit ca lanțul să nu se mai repete.';
     }
-    setStage('bit', t, 'gandeste');
-    feedback(false, '💡 Indiciu', t);
+    showHint(t);
   }
 
   /* ============================================================
      FINAL DE NIVEL — stele, insigne, fereastra de rezultat
      ============================================================ */
   function finishLevel() {
+    hideHint();
     var s = 3;
     if (G.greseli >= 3) s = 1;
     else if (G.greseli > 0 || G.indiciiFolosite > 0) s = 2;
@@ -960,7 +984,12 @@
 
     $('btnBack').onclick = function () { FX.sfx.click(); renderMap(world); nav('map'); };
     $('btnSay').onclick = speakCurrent;
-    $('btnHint').onclick = giveHint;
+    /* indiciul pornește din momentul apăsării (pointerdown), și pe touch, și
+       cu mouse-ul; click-ul de după e ignorat, ca să nu apară de două ori —
+       dar rămâne activ pentru tastatură (Enter/Spațiu nu trec prin pointerdown) */
+    var hb = $('btnHint'), ultimaApasare = 0;
+    hb.addEventListener('pointerdown', function () { ultimaApasare = Date.now(); giveHint(); });
+    hb.addEventListener('click', function () { if (Date.now() - ultimaApasare > 800) giveHint(); });
 
     $('modalBg').onclick = function (e) { if (e.target === $('modalBg')) closeModal(); };
 

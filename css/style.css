@@ -544,3 +544,29 @@ button:focus-visible, .clue:focus-visible, .lvl:focus-visible {
 
 /* containerul hărții: bara de capitol + grila + punctele, pe toată înălțimea */
 .chapters { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--gap); }
+
+/* ---------------- Indiciul temporar (5 secunde) ---------------- */
+.hint-pop {
+  position: fixed; left: 50%; top: clamp(58px, 9.5vh, 84px); z-index: 700;
+  width: min(92vw, 560px); transform: translate(-50%, -14px);
+  background: #fffbe8; border: 3px solid var(--yellow); border-radius: 18px;
+  box-shadow: 0 16px 36px rgba(60, 40, 20, .28);
+  padding: clamp(8px, 1.4vh, 12px) clamp(10px, 1.6vw, 16px) clamp(12px, 1.8vh, 16px);
+  display: flex; gap: 12px; align-items: center;
+  font-weight: 700; font-size: var(--fs-lg); line-height: 1.35; color: var(--ink);
+  opacity: 0; pointer-events: none; visibility: hidden;
+  transition: opacity .18s ease, transform .22s cubic-bezier(.2, 1.4, .5, 1), visibility 0s .2s;
+}
+.hint-pop.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
+.hint-pop .ch { width: clamp(42px, 7.5vh, 64px); height: auto; flex: none; animation: bob 2.2s ease-in-out infinite; }
+.hint-pop .txt { flex: 1; min-width: 0; }
+.hint-pop .who {
+  display: block; font-size: var(--fs-sm); color: var(--yellow-d); font-weight: 900;
+  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 2px;
+}
+.hint-pop .bar {
+  position: absolute; left: 14px; right: 14px; bottom: 5px; height: 5px; border-radius: 99px;
+  background: var(--yellow); transform-origin: left center; transform: scaleX(0);
+}
+.hint-pop.show .bar { animation: hintBar 5s linear forwards; }
+@keyframes hintBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
