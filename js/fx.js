@@ -83,31 +83,116 @@
   }
   function musicIsOn() { return musicOn; }
 
-  /* ---------------- VOCE (citește textul pentru cei mici) ---------------- */
-  var voice = null;
-  function pickVoice() {
-    if (!global.speechSynthesis) return null;
-    var vs = global.speechSynthesis.getVoices(), i;
-    for (i = 0; i < vs.length; i++) if (/ro[-_]RO|Romanian|Roman/i.test(vs[i].lang + ' ' + vs[i].name)) return vs[i];
-    return null;
+  /* ---------------- VOCE (citește textul pentru cei mici) ----------------
+     Regula de aur: NU citim niciodată cu o voce care nu e românească —
+     un text românesc citit de o voce englezească sună dezastruos. Dacă nu
+     există voce românească, speak() întoarce false și jocul explică
+     utilizatorului cum obține una (Edge o are gata, Windows o instalează).
+     Când există, textul e pregătit ca să curgă natural: abrevieri
+     desfăcute, simboluri citite, propoziții separate, ritm potrivit. */
+  var voice = null, voiceList = [], voicePref = null, voiceCbs = [];
+
+  /* cât de bună e o voce pentru română (−1 = nu e românească) */
+  function voiceScore(v) {
+    var n = (v.name || '') + ' ' + (v.voiceURI || '');
+    if (!(/^ro([-_]|$)/i.test(v.lang || '') || /rom[aâ]n/i.test(n))) return -1;
+    var s = 100;
+    if (/natural|neural/i.test(n)) s += 60;   /* vocile neurale (Edge) sunt cele mai fluente */
+    if (/online/i.test(n)) s += 10;
+    if (/google/i.test(n)) s += 20;
+    if (/andrei|alina|emil|ioana/i.test(n)) s += 5;
+    return s;
+  }
+  function refreshVoices() {
+    if (!global.speechSynthesis) return;
+    var vs = [];
+    try { vs = global.speechSynthesis.getVoices() || []; } catch (e) { }
+    voiceList = vs.filter(function (v) { return voiceScore(v) >= 0; })
+      .sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
+    voice = null;
+    if (voicePref) voice = voiceList.filter(function (v) { return v.name === voicePref; })[0] || null;
+    if (!voice) voice = voiceList[0] || null;
+    voiceCbs.forEach(function (f) { try { f(voiceList); } catch (e) { } });
   }
   if (global.speechSynthesis) {
-    global.speechSynthesis.onvoiceschanged = function () { voice = pickVoice(); };
-    setTimeout(function () { voice = pickVoice(); }, 400);
+    try { global.speechSynthesis.addEventListener('voiceschanged', refreshVoices); }
+    catch (e) { global.speechSynthesis.onvoiceschanged = refreshVoices; }
+    refreshVoices();
+    setTimeout(refreshVoices, 300);
+    setTimeout(refreshVoices, 1500);
   }
+  function hasVoice() { if (!voice) refreshVoices(); return !!voice; }
+  function voices() { return voiceList.map(function (v) { return { name: v.name, lang: v.lang, local: !!v.localService }; }); }
+  function voiceName() { return voice ? voice.name : ''; }
+  function setVoice(name) { voicePref = name || null; refreshVoices(); }
+  function onVoices(f) { voiceCbs.push(f); if (voiceList.length) f(voiceList); }
+
+  /* pregătește textul pentru citire fluentă în română */
+  function prepare(t, natural) {
+    t = String(t)
+      .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, ' ')       /* emoji */
+      .replace(/[„“”"«»]/g, '')
+      .replace(/…/g, '. ')
+      .replace(/\s*→\s*/g, ', apoi ')
+      .replace(/\s*·\s*/g, ', ')
+      .replace(/\s*—\s*/g, ', ')
+      .replace(/(\d)\s*[–-]\s*(\d)/g, '$1 până la $2')                          /* 30–36 → 30 până la 36 */
+      .replace(/−\s*(\d)/g, 'minus $1')
+      .replace(/\+\s*(\d)/g, 'plus $1')
+      .replace(/(\d)\s*°\s*C\b/g, '$1 grade Celsius')
+      .replace(/(\d)\s*°/g, '$1 grade')
+      .replace(/(\d)\s*%/g, '$1 la sută')
+      .replace(/(\d)\s*km\/h\b/gi, '$1 kilometri pe oră')
+      .replace(/(\d)\s*km\b/gi, '$1 kilometri')
+      .replace(/(\d)\s*cm\b/gi, '$1 centimetri')
+      .replace(/(\d)\s*mm\b/gi, '$1 milimetri')
+      .replace(/(\d)\s*kg\b/gi, '$1 kilograme')
+      .replace(/(\d)\s*m\b/g, '$1 metri')
+      .replace(/(\d)\s*l\b/g, '$1 litri')
+      .replace(/\bnr\.\s*/gi, 'numărul ')
+      .replace(/\bex\.\s*/gi, 'de exemplu ')
+      .replace(/\bcca\.\s*/gi, 'circa ')
+      .replace(/\betc\.?/gi, 'și așa mai departe')
+      .replace(/\bLED\b/g, 'led')
+      .replace(/\bGPS\b/g, 'gepees')
+      .replace(/\s+/g, ' ').trim();
+    /* vocile vechi (SAPI) au fost antrenate cu sedilă, nu cu virgulă dedesubt */
+    if (!natural) t = t.replace(/ș/g, 'ş').replace(/ț/g, 'ţ').replace(/Ș/g, 'Ş').replace(/Ț/g, 'Ţ');
+    return t;
+  }
+  /* împarte în propoziții: vocile citesc mai natural bucăți scurte, iar
+     Chrome întrerupe textele lungi la ~15 secunde */
+  function sentences(t) {
+    var out = [], m = t.match(/[^.!?]+[.!?]+["]?|[^.!?]+$/g) || [t], buf = '';
+    m.forEach(function (s) {
+      s = s.trim(); if (!s) return;
+      if ((buf + ' ' + s).length > 180 && buf) { out.push(buf); buf = s; } else buf = buf ? buf + ' ' + s : s;
+    });
+    if (buf) out.push(buf);
+    return out;
+  }
+
+  var speakGen = 0;
   function speak(text) {
     if (!global.speechSynthesis || !text) return false;
-    try {
-      global.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(String(text).replace(/\s+/g, ' '));
-      if (!voice) voice = pickVoice();
-      if (voice) u.voice = voice;
-      u.lang = 'ro-RO'; u.rate = 0.92; u.pitch = 1.05;
-      global.speechSynthesis.speak(u);
-      return true;
-    } catch (e) { return false; }
+    if (!hasVoice()) return false;
+    var natural = /natural|neural|google/i.test(voice.name);
+    var gen = ++speakGen, parts = sentences(prepare(text, natural));
+    try { global.speechSynthesis.cancel(); } catch (e) { }
+    /* Chrome pierde uneori un enunț rostit imediat după cancel(): mică pauză */
+    setTimeout(function () {
+      if (gen !== speakGen) return;
+      parts.forEach(function (p) {
+        var u = new SpeechSynthesisUtterance(p);
+        try { u.voice = voice; } catch (e) { }
+        u.lang = voice.lang || 'ro-RO';
+        u.rate = natural ? 1.0 : 0.9; u.pitch = 1.0; u.volume = 1;
+        try { global.speechSynthesis.speak(u); } catch (e) { }
+      });
+    }, 60);
+    return true;
   }
-  function stopSpeak() { try { global.speechSynthesis.cancel(); } catch (e) { } }
+  function stopSpeak() { speakGen++; try { global.speechSynthesis.cancel(); } catch (e) { } }
 
   /* ---------------- PARTICULE ---------------- */
   var cv = null, cx = null, parts = [], raf = null;
@@ -214,7 +299,8 @@
   global.FX = {
     sfx: SFX, setSound: setSound, soundOn: soundOn,
     setMusic: setMusic, musicIsOn: musicIsOn,
-    speak: speak, stopSpeak: stopSpeak,
+    speak: speak, stopSpeak: stopSpeak, hasVoice: hasVoice, voices: voices,
+    voiceName: voiceName, setVoice: setVoice, onVoices: onVoices,
     confetti: confetti, sparkle: sparkle, puff: puff, shake: shake
   };
 })(window);

@@ -135,10 +135,27 @@ node build-artifact.js
 
 ---
 
+## Vocea naratorului
+
+Butonul 🗣️ citește textul cu voce tare (util în clasa I). Jocul folosește vocile
+instalate în calculator și **citește numai cu o voce românească** — dacă nu găsește
+una, nu citește deloc (un text românesc citit de o voce englezească sună dezastruos)
+și îți arată cum o obții:
+
+- **Cel mai simplu:** deschide jocul în **Microsoft Edge**, care are vocile românești
+  naturale „Andrei" și „Alina" fără nicio instalare (au nevoie de internet).
+- **Pentru orice browser:** instalează vocea românească în Windows —
+  *Setări → Timp și limbă → Vorbire → Gestionare voci → Adăugare voci → Română* —
+  apoi repornește browserul.
+
+Când există mai multe voci românești, în meniu apare un selector din care alegi
+naratorul preferat. Textul e pregătit înainte de citire ca să curgă natural:
+abrevierile sunt desfăcute (20 cm → „douăzeci de centimetri", −5 °C → „minus cinci
+grade Celsius"), simbolurile și emoji-urile sunt eliminate, iar textul e citit pe
+propoziții, cu ritm potrivit fiecărui tip de voce.
+
 ## Accesibilitate
 
-- Butonul 🗣️ citește textul cu voce tare (util în clasa I) — folosește vocea
-  românească instalată în sistem, dacă există.
 - Ținte de click mari, contrast bun, navigare cu tastatura (`Tab`, `Enter`, `Esc`).
 - Fără derulare: pe orice ecran, tot ce trebuie apăsat e vizibil de la bun început.
 - Respectă setarea „mișcare redusă" din sistemul de operare.

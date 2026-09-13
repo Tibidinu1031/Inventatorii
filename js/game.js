@@ -52,7 +52,7 @@
      ============================================================ */
   var KEY = 'inventatorii.v1';
   var S = {
-    mod: 'mediu', sunet: true, voce: false,
+    mod: 'mediu', sunet: true, voce: false, vocePref: '',
     prog: { build: {}, fix: {} },   // index nivel -> stele (1..3)
     album: [],                      // numele invențiilor construite
     insigne: []
@@ -70,6 +70,7 @@
         S.mod = MODES[d.mod] ? d.mod : 'mediu';
         S.sunet = d.sunet !== false;
         S.voce = !!d.voce;
+        S.vocePref = d.vocePref || '';
         S.prog = d.prog && d.prog.build ? d.prog : { build: {}, fix: {} };
         S.album = d.album || [];
         S.insigne = d.insigne || [];
@@ -358,7 +359,57 @@
 
   function speakCurrent() {
     var t = G ? (G.w === 'build' ? G.L.problem : G.L.story) : '';
-    if (t) { FX.sfx.click(); FX.speak(t); }
+    if (!t) return;
+    FX.sfx.click();
+    if (!FX.hasVoice()) {
+      showHint(noVoiceShort(), '🗣️ Fără voce românească', 'normal');
+      return;
+    }
+    FX.speak(t);
+  }
+
+  /* ============================================================
+     VOCEA NARATORULUI
+     Browserul citește cu vocile din sistem. Dacă nu există una
+     românească, nu citim deloc (ar suna dezastruos) — explicăm cum se obține.
+     ============================================================ */
+  var inEdge = /Edg\//.test(navigator.userAgent);
+  function noVoiceShort() {
+    return inEdge
+      ? 'Vocile românești din Edge se încarcă online: verifică internetul, apoi apasă din nou.'
+      : 'Nu există o voce românească în acest browser. Deschide jocul în Microsoft Edge sau instalează vocea din Setări → Vorbire.';
+  }
+  function showVoiceHelp() {
+    FX.sfx.open();
+    showModal(
+      ART.character('bit', 'normal') +
+      '<h2>Nu am găsit o voce românească</h2>' +
+      '<p class="q center">Browserul citește cu vocile instalate în calculator, iar aici sunt doar voci englezești — de aceea sună rău. Jocul nu citește cu ele.</p>' +
+      '<div class="fact"><b>1. Cel mai simplu</b><br>' +
+      (inEdge
+        ? 'Ești deja în Edge: vocile „Andrei" și „Alina" se descarcă online. Verifică internetul, apoi apasă iar 🗣️.'
+        : 'Deschide jocul în <b>Microsoft Edge</b>. Are vocile românești naturale „Andrei" și „Alina" fără nicio instalare (doar cu internet).') +
+      '</div>' +
+      '<div class="fact"><b>2. Pentru orice browser</b><br>Instalează vocea românească în Windows: <b>Setări → Timp și limbă → Vorbire → Gestionare voci → Adăugare voci → Română</b>, apoi repornește browserul.</div>' +
+      '<div class="actions"><button class="btn" id="mOk">Am înțeles</button></div>'
+    );
+    $('mOk').onclick = function () { FX.sfx.click(); closeModal(); };
+  }
+  function renderVoiceSel() {
+    var sel = $('voiceSel'), list = FX.voices();
+    sel.innerHTML = '';
+    list.forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v.name;
+      o.textContent = v.name.replace(/Microsoft |Google | - Romanian.*| \(Romania\)/g, '').replace(/Online \(Natural\)/, '(naturală)');
+      if (v.name === FX.voiceName()) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.classList.toggle('hidden', list.length < 2);
+    $('btnVoice').title = list.length
+      ? 'Citește textul cu voce tare (' + FX.voiceName().replace(/Microsoft |Google /, '') + ')'
+      : 'Nu există voce românească — apasă pentru detalii';
+    $('btnVoice').classList.toggle('novoice', !list.length);
   }
 
   /* stage: scenă + bula personajului */
@@ -968,9 +1019,16 @@
       if (S.sunet) FX.sfx.good();
     };
     $('btnVoice').onclick = function () {
+      if (!S.voce && !FX.hasVoice()) { showVoiceHelp(); return; }
       S.voce = !S.voce; save(); renderMenu(); FX.sfx.click();
-      if (S.voce) FX.speak('Bine ai venit, inventatorule!'); else FX.stopSpeak();
+      if (S.voce) FX.speak('Bună! Eu sunt Bit. Hai să inventăm ceva împreună!'); else FX.stopSpeak();
     };
+    $('voiceSel').onchange = function () {
+      S.vocePref = this.value; FX.setVoice(S.vocePref); save(); renderVoiceSel();
+      FX.speak('Bună! Acum citesc eu povestea.');
+    };
+    FX.setVoice(S.vocePref);
+    FX.onVoices(renderVoiceSel);
 
     Array.prototype.forEach.call($('diffRow').children, function (b) {
       b.onclick = function () {

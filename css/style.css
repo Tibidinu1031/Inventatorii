@@ -570,3 +570,16 @@ button:focus-visible, .clue:focus-visible, .lvl:focus-visible {
 }
 .hint-pop.show .bar { animation: hintBar 5s linear forwards; }
 @keyframes hintBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* ---------------- Vocea naratorului ---------------- */
+.voice-sel {
+  font-family: inherit; font-weight: 800; font-size: var(--fs-sm); color: var(--ink);
+  background: #fff; border: 2px solid #f0e2d0; border-radius: 14px; padding: 0 10px;
+  height: clamp(36px, 5.4vh, 50px); box-shadow: 0 4px 0 #e0cfb9; cursor: pointer; max-width: 46vw;
+}
+.icon-btn.novoice { position: relative; }
+.icon-btn.novoice:after {
+  content: '!'; position: absolute; top: -6px; right: -6px; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--red); color: #fff; font-size: 12px; font-weight: 900;
+  display: grid; place-items: center; box-shadow: 0 2px 0 var(--red-d);
+}
