@@ -1103,7 +1103,9 @@
   fit();
 
   /* mesaj de bun venit la prima rulare */
-  if (!localStorage.getItem(KEY)) {
+  var hasProgress = false;
+  try { hasProgress = !!localStorage.getItem(KEY); } catch (e) { }
+  if (!hasProgress) {
     setTimeout(function () {
       showModal(
         ART.character('bit', 'bucuros') +
